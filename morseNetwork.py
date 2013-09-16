@@ -6,7 +6,7 @@ from morseDict import *
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(25,GPIO.OUT, pull_up_down=GPIO.PUD_DOWN)
-iSpeed = .1
+iSpeed = 1
 
 global startRead
 global mark
@@ -75,7 +75,6 @@ def lightReading(channel):
 			elif time.time()-mark < 1.5*iSpeed:
 				word+='.'
 		if word == '...-.-':
-			print word
 			endKey = True
 			word=''
 		if time.time()-mark >1.5*iSpeed and len(word)>0 and lightValue:
@@ -88,7 +87,6 @@ def lightReading(channel):
 			message=[]
 			word=''
 			endKey=False
-	print message
 	mark = time.time()
 
 
@@ -105,6 +103,7 @@ def morseProcess(morseList):
 	if 'L' in totalMessage[:1]: 
 		print totalMessage
 	else:
+		time.sleep(2)
 		sendMessage(totalMessage)
 
 def lightOn(timeInterval=-1):
