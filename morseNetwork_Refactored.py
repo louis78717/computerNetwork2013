@@ -4,115 +4,117 @@ import os
 import sys
 from morseDict import *
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(25,GPIO.OUT, pull_up_down=GPIO.PUD_DOWN)
-iSpeed = .005
-
-global startRead
-global mark
-global message
-global word
-global endKey
-mark = 0
-message=[]
-word=''
-endKey = False
-
-GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  
-
-def sendMessage(message):
-	for c in message:
-		if c==' ':
-			time.sleep(iSpeed*3)
-		else:
-			morseMessage=morsetab[c]
-			for m in morseMessage:
-				if m=='.':
-					lightOn(iSpeed)
-				else: 	
-					lightOn(iSpeed*3)
-				time.sleep(iSpeed)
-			time.sleep(iSpeed*2)
-	endMessage()
-
-def messageKey():
-	time.sleep(iSpeed)
-	lightOn(iSpeed)
-	time.sleep(iSpeed)
-	lightOn(iSpeed)
-
-def endMessage():
-#	lightOn(iSpeed * 9)
-	lightOn(iSpeed)
-	time.sleep(iSpeed)
-	lightOn(iSpeed)
-	time.sleep(iSpeed)
-	lightOn(iSpeed)
-	time.sleep(iSpeed)
-	lightOn(iSpeed*3)
-	time.sleep(iSpeed)
-	lightOn(iSpeed)
-	time.sleep(iSpeed)
-	lightOn(iSpeed*3)
-	time.sleep(iSpeed)
 
 
-def lightReading(channel):
-	global mark
-	global message
-	global word
-	global endKey 
-	lightValue = GPIO.input(channel)
-	if time.time() - mark > 12 * iSpeed:
-		message=[]
+class Run(object):
+	def __init__(self,output_pin=25,input_pin=18,message=None):
+		with MorseMessage(output_pin=output_pin,input_pin=input_pin) as fd:
+			if self.message: fd.write(message):
+				for message in fd.read():fd.sendMessage(message)
+
+class MorseMessage(object):
+	def __init__(self, output_pin=25,input_pin=18):
+		self.output_pin = output_pin
+		self.input_pin = input_pin
+		self.iSpeed = .005
+		self.mark = 0
+		self.message=[]
 		word=''
-		endKey=False
- 	startRead = True
-	if startRead:		
-		if not lightValue:
-			if time.time()-mark >= 1.5*iSpeed and time.time()-mark < 5*iSpeed:
-				word+='-'
-			elif time.time()-mark < 1.5*iSpeed:
-				word+='.'
-		if word == '...-.-':
-			print word
-			endKey = True
-			word=''
-		if time.time()-mark >1.5*iSpeed and len(word)>0 and lightValue:
-			message.append(word)
-			word=''
-		if time.time()-mark > iSpeed * 5 and len(message)>0 and lightValue:
-			message.append(' ')
-		if time.time()-mark >= iSpeed * 8 and len(message)>0 or endKey:
-			print morseProcess(message)
-			message=[]
-			word=''
-			endKey=False
-	mark = time.time()
+		endKey = False
+		return self
+
+	def __enter__(self):
+		GPIO.setmode(GPIO.BCM)
+		GPIO.setup(25,GPIO.OUT, pull_up_down=GPIO.PUD_DOWN)
+		GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+		GPIO.add_event_detect(18, GPIO.BOTH, callback=lightReading)  
+		return self
+
+	def __exit__(self,xclass,xclassstr,xstacktrace):
+		GPIO.cleanup()
+		return self
+
+	def sendMessage(self,message):
+		for c in message:
+			if c==' ':
+				time.sleep(iSpeed*3)
+			else:
+				morseMessage=morsetab[c]
+				for m in morseMessage:
+					if m=='.':
+						lightOn(iSpeed)
+					else: 	
+						lightOn(iSpeed*3)
+					time.sleep(iSpeed)
+				time.sleep(iSpeed*2)
+		self.endMessage()
+
+	def endMessage(self):
+	#	lightOn(iSpeed * 9)
+		self.lightOn(iSpeed)
+		time.sleep(iSpeed)
+		self.lightOn(iSpeed)
+		time.sleep(iSpeed)
+		self.lightOn(iSpeed)
+		time.sleep(iSpeed)
+		self.lightOn(iSpeed*3)
+		time.sleep(iSpeed)
+		self.lightOn(iSpeed)
+		time.sleep(iSpeed)
+		self.lightOn(iSpeed*3)
+		time.sleep(iSpeed)
 
 
-def morseProcess(morseList):
-	totalMessage = ''
-	for morse in morseList:
-		if morse == ' ':
-			totalMessage += ' '
-		else:
-			letter = [ key for key,val in morsetab.items() if val==morse ]
-			totalMessage += letter[0]
-	return totalMessage
+	def lightReading(self,channel):
+		lightValue = GPIO.input(channel)
+		if time.time() - self.mark > 12 * iSpeed:
+			self.message=[]
+			self.word=''
+			self.endKey =False
+	 	startRead = True
+		if startRead:		
+			if not lightValue:
+				if time.time()-self.mark >= 1.5*iSpeed and time.time()-self.mark < 5*iSpeed:
+					self.word+='-'
+				elif time.time()-self.mark < 1.5*iSpeed:
+					self.word+='.'
+			if self.word == '...-.-':
+				print self.word
+				self.endKey  = True
+				self.word=''
+			if time.time()-self.mark >1.5*iSpeed and len(self.word)>0 and lightValue:
+				self.message.append(self.word)
+				self.word=''
+			if time.time()-self.mark > iSpeed * 5 and len(self.message)>0 and lightValue:
+				self.message.append(' ')
+			if time.time()-self.mark >= iSpeed * 8 and len(self.message)>0 or self.endKey :
+				print self.morseProcess(self.message)
+				self.message=[]
+				self.word=''
+				self.endKey =False
+		self.mark = time.time()
 
-def lightOn(timeInterval=-1):
-	GPIO.output(25,False)
-	if (timeInterval!=-1):
-		time.sleep(timeInterval)
-		GPIO.output(25,True)
 
-def lightOff(timeInterval=-1):
-	GPIO.output(25,True)
-	if (timeInterval!=-1):
-		time.sleep(timeInterval)
+	def morseProcess(self,morseList):
+		totalMessage = ''
+		for morse in morseList:
+			if morse == ' ':
+				totalMessage += ' '
+			else:
+				letter = [ key for key,val in morsetab.items() if val==morse ]
+				totalMessage += letter[0]
+		return totalMessage
+
+	def lightOn(self,timeInterval=-1):
 		GPIO.output(25,False)
+		if (timeInterval!=-1):
+			time.sleep(timeInterval)
+			GPIO.output(25,True)
 
-#def startReading():
-GPIO.add_event_detect(18, GPIO.BOTH, callback=lightReading)
+	def lightOff(self,timeInterval=-1):
+		GPIO.output(25,True)
+		if (timeInterval!=-1):
+			time.sleep(timeInterval)
+			GPIO.output(25,False)
+
 
