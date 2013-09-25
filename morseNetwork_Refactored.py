@@ -27,7 +27,7 @@ class MorseMessage(object):
 		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(25,GPIO.OUT, pull_up_down=GPIO.PUD_DOWN)
 		GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-		GPIO.add_event_detect(18, GPIO.BOTH, callback=lightReading)  
+		GPIO.add_event_detect(18, GPIO.BOTH, callback=self.lightReading)  
 		return self
 
 	def __exit__(self,xclass,xclassstr,xstacktrace):
