@@ -6,7 +6,7 @@ from morseDict import *
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(25,GPIO.OUT, pull_up_down=GPIO.PUD_DOWN)
-iSpeed = 1
+iSpeed = .01
 
 global startRead
 global mark
@@ -119,5 +119,7 @@ def lightOff(timeInterval=-1):
 		GPIO.output(25,False)
 
 #def startReading():
-GPIO.add_event_detect(18, GPIO.BOTH, callback=lightReading)
-
+try:
+	GPIO.add_event_detect(18, GPIO.BOTH, callback=lightReading)
+except:
+	pass
