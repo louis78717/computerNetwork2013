@@ -13,7 +13,7 @@ class SocketContextManager(p33socket):
         pass
 
 class Server(object):
-    def __init__(self,ServerIPaddress=("127.0.0.1",5280)):
+    def __init__(self,ServerIPaddress=("10.27.8.42",5280)):
         userDict={}
         with SocketContextManager(AF_INET, SOCK_DGRAM) as sock:
             sock.bind(ServerIPaddress)
@@ -23,50 +23,42 @@ class Server(object):
                     message, address = sock.recvfrom(1024)
                     message = message.decode()
                     message,s,name = message.rpartition(' ')
-                    message,s,port = message.rpartition('@')
                     if name not in userDict:
-                        userDict[name]=(int)(port)
+                        userDict[name]=address
                     print ("%s:"%name,message)
-                    message = bytes(name+":"+message,"UTF-8")
+                    message = bytes(name+": "+message,"UTF-8")
                     for user, port in userDict.items():
                         if user != name:
-                            sock.sendto(message,("127.0.0.1",port))
+                            sock.sendto(message,port)
                 except timeout:
                     continue
+                
 class Client(object):
-    def __init__(self,ServerIPAddress=("127.0.0.1",5280)):
-        with SocketContextManager(AF_INET,SOCK_DGRAM) as sock:
-            while True:
-                message = bytes(input("Message? "),"UTF-8")
-                if not message:break
-                sent=sock.sendto(message,ServerIPAddress)
-                print ("%i bytes sent"%sent)
-                
-                
-class Client1(object):
-    def __init__(self,ServerIPAddress=("127.0.0.1",5280),portNumber=5555):
+    def __init__(self,ServerIPAddress=("10.27.8.42",5280)):
         quit = False
         username = False
         while True:
-            with SocketContextManager(AF_INET,SOCK_DGRAM) as sock2:
+            with SocketContextManager(AF_INET,SOCK_DGRAM) as sock:
+                sock.settimeout(.2)
                 while True:
                     if not username:
                         username = input("Username? ")
-                    message = bytes(input(username+": ")+"@"+str(portNumber)+" "+username,"UTF-8")
-                    if message.decode()[0:4] == 'quit':
-                        quit = True
-                        break
-                    if not message:break
-                    sent=sock2.sendto(message,ServerIPAddress)
-            if quit:
-                break  
-            with SocketContextManager(AF_INET,SOCK_DGRAM) as sock1:
-                sock1.bind(("127.0.0.1",portNumber))
-                sock1.settimeout(2.0)
-                while True:
+                    message = bytes(input(username+": ")+" "+username,"UTF-8")
+                    print(len(message),len(username))
+                    if len(message) > len(username)+1:
+                        if message.decode()[0:4] == 'quit':
+                            quit = True
+                            break
+                        if not message:break
+                        sent=sock.sendto(message,ServerIPAddress)
+                    hasmessage = True
                     try:
-                        message, address = sock1.recvfrom(1024)
-                        print (message.decode())
+                        while hasmessage:
+                            message, address = sock.recvfrom(1024)
+                            print (message.decode())
                     except timeout:
+                        hasmessage = False
                         continue
+            if quit:
+                break 
 
