@@ -145,7 +145,7 @@ class TFTPCommandInterpreter(TFTPClient):
                     if protoOrdinal == 1:
                         ClientFilename=message.[2:message.find('\x00']
                         try:
-                            with open(PlatformFilename,"r") as fd:
+                            with open(ClientFilename,"r") as fd:
                                 filecontents = fd.read()
                                 filelen = len(filecontents)
                                 fullblockct, leftoverbytes = divmod(filelen,512)
@@ -158,7 +158,7 @@ class TFTPCommandInterpreter(TFTPClient):
                     if protoOrdinal == 2:
                          ClientFilename=message.[2:message.find('\x00']
                         try:
-                            with open(PlatformFilename,"w") as fd:
+                            with open(ClientFilename,"w") as fd:
                                 try:
                                     message, address = sock.recvfrom(1024)
                                     message = message.decode()

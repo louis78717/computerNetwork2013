@@ -1,0 +1,172 @@
+1 RFC 768                                                        J. Postel
+2                                                                      ISI
+3                                                           28 August 1980
+4
+5
+6
+7                         User Datagram Protocol
+8                         ----------------------
+9
+10Introduction
+11------------
+12
+13This User Datagram  Protocol  (UDP)  is  defined  to  make  available  a
+14datagram   mode  of  packet-switched   computer   communication  in  the
+15environment  of  an  interconnected  set  of  computer  networks.   This
+16protocol  assumes  that the Internet  Protocol  (IP)  [1] is used as the
+17underlying protocol.
+18
+19This protocol  provides  a procedure  for application  programs  to send
+20messages  to other programs  with a minimum  of protocol mechanism.  The
+21protocol  is transaction oriented, and delivery and duplicate protection
+22are not guaranteed.  Applications requiring ordered reliable delivery of
+23streams of data should use the Transmission Control Protocol (TCP) [2].
+24
+25Format
+26------
+27
+28                                    
+29                  0      7 8     15 16    23 24    31  
+30                 +--------+--------+--------+--------+ 
+31                 |     Source      |   Destination   | 
+32                 |      Port       |      Port       | 
+33                 +--------+--------+--------+--------+ 
+34                 |                 |                 | 
+35                 |     Length      |    Checksum     | 
+36                 +--------+--------+--------+--------+ 
+37                 |                                     
+38                 |          data octets ...            
+39                 +---------------- ...                 
+40
+41                      User Datagram Header Format
+42
+43Fields
+44------
+45
+46Source Port is an optional field, when meaningful, it indicates the port
+47of the sending  process,  and may be assumed  to be the port  to which a
+48reply should  be addressed  in the absence of any other information.  If
+49not used, a value of zero is inserted.
+50
+51
+52
+53
+54
+55Postel                                                          [page 1]
+56
+57
+58                                                             28 Aug 1980
+59User Datagram Protocol                                           RFC 768
+60Fields
+61
+62
+63
+64Destination  Port has a meaning  within  the  context  of  a  particular
+65internet destination address.
+66
+67Length  is the length  in octets  of this user datagram  including  this
+68header  and the data.   (This  means  the minimum value of the length is
+69eight.)
+70
+71Checksum is the 16-bit one's complement of the one's complement sum of a
+72pseudo header of information from the IP header, the UDP header, and the
+73data,  padded  with zero octets  at the end (if  necessary)  to  make  a
+74multiple of two octets.
+75
+76The pseudo  header  conceptually prefixed to the UDP header contains the
+77source  address,  the destination  address,  the protocol,  and the  UDP
+78length.   This information gives protection against misrouted datagrams.
+79This checksum procedure is the same as is used in TCP.
+80
+81                  0      7 8     15 16    23 24    31 
+82                 +--------+--------+--------+--------+
+83                 |          source address           |
+84                 +--------+--------+--------+--------+
+85                 |        destination address        |
+86                 +--------+--------+--------+--------+
+87                 |  zero  |protocol|   UDP length    |
+88                 +--------+--------+--------+--------+
+89
+90If the computed  checksum  is zero,  it is transmitted  as all ones (the
+91equivalent  in one's complement  arithmetic).   An all zero  transmitted
+92checksum  value means that the transmitter  generated  no checksum  (for
+93debugging or for higher level protocols that don't care).
+94
+95User Interface
+96--------------
+97
+98A user interface should allow
+99
+100  the creation of new receive ports,
+101
+102  receive  operations  on the receive  ports that return the data octets
+103  and an indication of source port and source address,
+104
+105  and an operation  that allows  a datagram  to be sent,  specifying the
+106  data, source and destination ports and addresses to be sent.
+107
+108
+109
+110
+111
+112
+113[page 2]                                                          Postel
+114
+115
+11628 Aug 1980
+117RFC 768                                           User Datagram Protocol
+118                                                            IP Interface
+119
+120
+121
+122IP Interface
+123-------------
+124
+125The UDP module  must be able to determine  the  source  and  destination
+126internet addresses and the protocol field from the internet header.  One
+127possible  UDP/IP  interface  would return  the whole  internet  datagram
+128including all of the internet header in response to a receive operation.
+129Such an interface  would  also allow  the UDP to pass  a  full  internet
+130datagram  complete  with header  to the IP to send.  The IP would verify
+131certain fields for consistency and compute the internet header checksum.
+132
+133Protocol Application
+134--------------------
+135
+136The major uses of this protocol is the Internet Name Server [3], and the
+137Trivial File Transfer [4].
+138
+139Protocol Number
+140---------------
+141
+142This is protocol  17 (21 octal)  when used  in  the  Internet  Protocol.
+143Other protocol numbers are listed in [5].
+144
+145References
+146----------
+147
+148[1]     Postel,   J.,   "Internet  Protocol,"  RFC 760,  USC/Information
+149        Sciences Institute, January 1980.
+150
+151[2]     Postel,    J.,   "Transmission   Control   Protocol,"   RFC 761,
+152        USC/Information Sciences Institute, January 1980.
+153
+154[3]     Postel,  J.,  "Internet  Name Server,"  USC/Information Sciences
+155        Institute, IEN 116, August 1979.
+156
+157[4]     Sollins,  K.,  "The TFTP Protocol,"  Massachusetts  Institute of
+158        Technology, IEN 133, January 1980.
+159
+160[5]     Postel,   J.,   "Assigned   Numbers,"  USC/Information  Sciences
+161        Institute, RFC 762, January 1980.
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171Postel                                                          [page 3]
+172
