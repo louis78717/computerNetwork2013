@@ -44,7 +44,6 @@ class Client(object):
                     if not username:
                         username = input("Username? ")
                     message = bytes(input(username+": ")+" "+username,"UTF-8")
-                    print(len(message),len(username))
                     if len(message) > len(username)+1:
                         if message.decode()[0:4] == 'quit':
                             quit = True
