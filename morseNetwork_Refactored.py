@@ -74,8 +74,8 @@ class MorseMessage(object):
 
 
 	def lightReading(self,channel):
-		print self.word
-		print 'hit'
+		#print self.word
+		#print 'hit'
 		lightValue = GPIO.input(channel)
 		if time.time() - self.mark > 12 * self.iSpeed:
 			self.message=[]
@@ -125,5 +125,3 @@ class MorseMessage(object):
 		if (timeInterval!=-1):
 			time.sleep(timeInterval)
 			GPIO.output(25,False)
-
-
